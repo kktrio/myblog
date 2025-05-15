@@ -7,11 +7,18 @@ on:
     # 日本時間18:00 = UTC09:00 に毎日
     - cron:  '0 9 * * *'
 
+permissions:
+  contents: write
+
 jobs:
   generate-posts:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
