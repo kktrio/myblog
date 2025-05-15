@@ -3,6 +3,7 @@
 import os
 import datetime
 import pathlib
+import urllib.parse
 import re
 from openai import OpenAI, RateLimitError
 from dotenv import load_dotenv
@@ -94,7 +95,8 @@ def generate_article(keyword):
     date = datetime.date.today().isoformat()
     safe_title = keyword.replace(" ", "-").replace("　", "-")
     filename = f"{date}-{safe_title}.md"
-    affiliate_link = f"https://www.amazon.co.jp/s?k={keyword}&tag={AMAZON_TAG}"
+    query = urllib.parse.quote_plus(keyword)
+    affiliate_link = f"https://www.amazon.co.jp/s?k={query}&tag={AMAZON_TAG}"
 
     content = TEMPLATE.format(
         title=keyword,
