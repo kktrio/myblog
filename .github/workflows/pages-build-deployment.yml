@@ -1,4 +1,4 @@
-name: Deploy Astro to GitHub Pages
+name: pages-build-deployment.yml
 
 # main ブランチへの push と手動トリガーで走らせる
 on:
