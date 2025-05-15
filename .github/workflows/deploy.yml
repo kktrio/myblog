@@ -41,5 +41,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          cname: autowritehubai.com
           # optional: デフォルトブランチ名が main 以外なら指定
           # publish_branch: gh-pages
