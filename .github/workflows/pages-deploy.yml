@@ -1,6 +1,6 @@
-# .github/workflows/pages-deploy.yml
 name: Deploy Astro to GitHub Pages
 
+# main ブランチへの push と手動トリガーで走らせる
 on:
   push:
     branches: [ main ]
@@ -9,30 +9,31 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     permissions:
-      contents: read
-      pages: write
-      id-token: write
+      contents: read        # コードのチェックアウト用
+      pages: write          # Pages の公開用
+      id-token: write       # OIDC トークン用
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
-      - name: Install deps
+      - name: Install dependencies
         run: npm ci
 
-      - name: Build with Astro
+      - name: Build site with Astro
         run: npm run build
 
-      - name: Configure Pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v3
 
-      - name: Upload artifact
+      - name: Upload artifact for Pages
         uses: actions/upload-pages-artifact@v1
         with:
           path: ./dist
