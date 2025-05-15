@@ -1,32 +1,45 @@
 name: Build & Deploy to gh-pages
 
+# main ブランチへの push と手動トリガーでデプロイ
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+# リポジトリへの書き込み権限を明示
+permissions:
+  contents: write    # コードやブランチの更新用
+  pages: write       # GitHub Pages 更新用
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      # リポジトリをフル履歴付きでチェックアウト
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          fetch-depth: 0
 
+      # Node.js をセットアップ
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
+      # 依存パッケージをインストールし、ビルド
       - name: Install dependencies & build
         run: |
           npm ci
           npm run build
 
+      # Astro のビルド成果物 dist/ を gh-pages ブランチへ公開
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          # optional: デフォルトブランチ名が main 以外なら指定
+          # publish_branch: gh-pages
