@@ -16,6 +16,7 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # 出力用テンプレート
 TEMPLATE = """---
 title: "{title}"
+category: "{title}"
 description: "{title} に関する初心者向けブログ記事です。"
 pubDate: "{date}"
 ---

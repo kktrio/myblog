@@ -1,4 +1,5 @@
 ---
+// 1. 必要なモジュールをインポート
 import BaseHead from '../../components/BaseHead.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
@@ -6,106 +7,84 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
 
-const posts = (await getCollection('blog')).sort(
-	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+// 2. 全記事を取得して日付降順ソート
+const allPosts = await getCollection('blog');
+const posts = allPosts.sort(
+  (a, b) =>
+    new Date(b.data.pubDate).valueOf() -
+    new Date(a.data.pubDate).valueOf()
 );
+
+// 3. カテゴリ（keyword）ごとにグルーピング
+const postsByCategory = posts.reduce((acc, post) => {
+  // frontmatter に category を追加していればそちらを使う
+  // まだ追加していない場合は title を代用
+  const cat = post.data.category || post.data.title;
+  if (!acc[cat]) acc[cat] = [];
+  acc[cat].push(post);
+  return acc;
+}, /** @type Record<string, typeof posts> */({}));
+
+// 4. 各カテゴリ内も日付降順にしておく（念のため）
+for (const cat of Object.keys(postsByCategory)) {
+  postsByCategory[cat].sort(
+    (a, b) =>
+      new Date(b.data.pubDate).valueOf() -
+      new Date(a.data.pubDate).valueOf()
+  );
+}
 ---
 
 <!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-		<style>
-			main {
-				width: 960px;
-			}
-			ul {
-				display: flex;
-				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
-			}
-			ul li {
-				width: calc(50% - 1rem);
-			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
-			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
-			}
-			ul li:first-child img {
-				width: 100%;
-			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
-			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
-			}
-			ul li a {
-				display: block;
-			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
-			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
-			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
-			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
-			}
-			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
-				}
-				ul li {
-					width: 100%;
-					text-align: center;
-				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
-				}
-			}
-		</style>
-	</head>
-	<body>
-		<Header />
-		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/blog/${post.id}/`}>
-									<img width={720} height={360} src={post.data.heroImage} alt="" />
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
-		</main>
-		<Footer />
-	</body>
+<html lang="ja">
+  <head>
+    <BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
+    <style>
+      main { width: 960px; margin: auto; }
+      h2 { margin-top: 2rem; font-size: 1.5rem; }
+      ul { display: flex; flex-wrap: wrap; gap: 1.5rem; list-style: none; padding: 0; }
+      li { width: calc(50% - .75rem); }
+      li img { width: 100%; height: auto; border-radius: 8px; }
+      .title { margin: .5rem 0 .25rem; font-size: 1.2rem; }
+      .date { color: #666; font-size: .9rem; }
+      @media (max-width:720px) {
+        li { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <Header />
+    <main>
+      {/*
+         カテゴリごとにセクションを作成
+         Object.entries で [カテゴリ名, 記事配列] の順でループ
+      */}
+      {Object.entries(postsByCategory).map(([category, posts]) => (
+        <section>
+          <h2>{category}</h2>
+          <ul>
+            {posts.map((post) => (
+              <li>
+                <a href={`/blog/${post.slug}/`}>
+                  {/*
+                     heroImage があれば表示、
+                     なければフォールバック用画像(/placeholder.png)を出す
+                  */}
+                  <img
+                    src={post.data.heroImage ?? '/placeholder.png'}
+                    alt={post.data.title}
+                  />
+                  <h3 class="title">{post.data.title}</h3>
+                  <p class="date">
+                    <FormattedDate date={post.data.pubDate} />
+                  </p>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </main>
+    <Footer />
+  </body>
 </html>
