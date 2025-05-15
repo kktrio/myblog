@@ -2,7 +2,7 @@ name: Auto Generate Blog Posts
 
 # 手動実行 と 毎日 09:00 UTC（日本時間18:00） に実行
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
   schedule:
     - cron: '0 9 * * *'
 
