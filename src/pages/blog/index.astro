@@ -1,5 +1,4 @@
 ---
-// 1. 必要なモジュールをインポート
 import BaseHead from '../../components/BaseHead.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
@@ -7,7 +6,6 @@ import { SITE_TITLE, SITE_DESCRIPTION } from '../../consts';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../../components/FormattedDate.astro';
 
-// 2. 全記事を取得して日付降順ソート
 const allPosts = await getCollection('blog');
 const posts = allPosts.sort(
   (a, b) =>
@@ -15,17 +13,13 @@ const posts = allPosts.sort(
     new Date(a.data.pubDate).valueOf()
 );
 
-// 3. カテゴリ（keyword）ごとにグルーピング
 const postsByCategory = posts.reduce((acc, post) => {
-  // frontmatter に category を追加していればそちらを使う
-  // まだ追加していない場合は title を代用
-  const cat = post.data.category || post.data.title;
+  const cat = post.data.category ?? post.data.title;
   if (!acc[cat]) acc[cat] = [];
   acc[cat].push(post);
   return acc;
 }, /** @type Record<string, typeof posts> */({}));
 
-// 4. 各カテゴリ内も日付降順にしておく（念のため）
 for (const cat of Object.keys(postsByCategory)) {
   postsByCategory[cat].sort(
     (a, b) =>
@@ -55,21 +49,13 @@ for (const cat of Object.keys(postsByCategory)) {
   <body>
     <Header />
     <main>
-      {/*
-         カテゴリごとにセクションを作成
-         Object.entries で [カテゴリ名, 記事配列] の順でループ
-      */}
       {Object.entries(postsByCategory).map(([category, posts]) => (
         <section>
           <h2>{category}</h2>
           <ul>
             {posts.map((post) => (
               <li>
-                <a href={`/blog/${post.slug}/`}>
-                  {/*
-                     heroImage があれば表示、
-                     なければフォールバック用画像(/placeholder.png)を出す
-                  */}
+                <a href={`/blog/${post.id}/`}>
                   <img
                     src={post.data.heroImage ?? '/placeholder.png'}
                     alt={post.data.title}
